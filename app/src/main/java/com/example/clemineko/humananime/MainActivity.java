@@ -11,6 +11,8 @@ import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final int CAMERA_REQUEST = 10;
+
     Button btnCamera;
     ImageView imgView;
 
@@ -26,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(intent,0);
+                startActivityForResult(intent, CAMERA_REQUEST);
             }
         });
     }
@@ -34,9 +36,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(data != null) {
-            Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-            imgView.setImageBitmap(bitmap);
+        if(resultCode == RESULT_OK) {
+            if(requestCode == CAMERA_REQUEST){
+                Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+                imgView.setImageBitmap(bitmap);
+            }
+
         }
     }
 }
