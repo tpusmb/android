@@ -1,15 +1,18 @@
 package com.example.clemineko.humananime;
 
+import android.Manifest;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -23,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int CAMERA_REQUEST = 10;
     public static final int GALLERY_REQUEST = 20;
+
+    private Bitmap bitmap;
+    private Uri imageUri;
 
     Button btnCamera;
     Button btnGallery;
@@ -43,11 +49,25 @@ public class MainActivity extends AppCompatActivity {
      * @param v
      */
     public void onCameraButtonClicked(View v){
-        // call the camera
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-        //invoke the camera as an activity and get something back from it
-        startActivityForResult(intent, CAMERA_REQUEST);
+
+        if(!hasPermission()){
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+        else{
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.TITLE, "New Picture");
+            values.put(MediaStore.Images.Media.DESCRIPTION, "From the Camera");
+            imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+            // call the camera
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+
+            //invoke the camera as an activity and get something back from it
+            startActivityForResult(intent, CAMERA_REQUEST);
+        }
+
     }
 
     /**
@@ -74,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
      * Function used to handle the end of a request.
      * @param requestCode
      * @param resultCode
-     * @param data  9j/4TxERXhpZgAASUkqAAgAAAAMAAABBAABAAAAwAwAAAEBBAABAAAALAc
+     * @param data
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -82,14 +102,18 @@ public class MainActivity extends AppCompatActivity {
 
         // if everything processed successfully
         if(resultCode == RESULT_OK) {
-            Bitmap bitmap;
 
             // if we are hearing back from using the camera
             if(requestCode == CAMERA_REQUEST){
-                // get a bitmap from the camera activity
-                bitmap = (Bitmap) data.getExtras().get("data");
-                // display the image
-                imgView.setImageBitmap(bitmap);
+                try{
+                    // get a bitmap thanks to his uri
+                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                    // display the image
+                    imgView.setImageBitmap(bitmap);
+
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
             }
             // if we are hearing back from the image gallery
             else if(requestCode == GALLERY_REQUEST){
@@ -139,5 +163,11 @@ public class MainActivity extends AppCompatActivity {
 
         // create a bitmap from these bytes
         return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+    }
+
+    private Boolean hasPermission(){
+        PackageManager pm = getBaseContext().getPackageManager();
+        int hasPerm = pm.checkPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, getBaseContext().getPackageName());
+        return hasPerm == PackageManager.PERMISSION_GRANTED;
     }
 }
