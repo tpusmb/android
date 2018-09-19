@@ -21,8 +21,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:layout_marginBottom="16dp"
         android:background="@android:color/holo_blue_dark"
-        android:text="Take a picture!"
-        android:textColor="@android:color/white"/>
+        android:text="@string/take_a_picture"
+        android:textColor="@android:color/white"
+
+        android:onClick="onCameraButtonClicked"/>
+
+    <Button
+        android:id="@+id/btnGallery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@android:color/holo_blue_dark"
+        android:text="@string/import_a_picture"
+        android:textColor="@android:color/white"
+
+        android:onClick="onGalleryButtonClicked"/>
 
 </LinearLayout>
