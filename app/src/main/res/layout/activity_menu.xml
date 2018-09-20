@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".MenuActivity">
+
+    <Button
+        android:id="@+id/btnWorkWithPicture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_weight="1"
+        android:background="@android:color/holo_blue_dark"
+        android:text="@string/work_with_picture"
+        android:textColor="@android:color/white"
+
+        android:onClick="onPictureButtonClicked"/>
+
+    <Button
+        android:id="@+id/btnConnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@android:color/holo_blue_dark"
+        android:text="@string/connect"
+        android:textColor="@android:color/white"
+
+        android:onClick="onConnectButtonClicked"/>
+
+</LinearLayout>
