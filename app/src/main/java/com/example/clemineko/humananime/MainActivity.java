@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Function to convert a bitmap to Base64 format
-     * @param bitmap
+     * @param bitmap The bitmap we want to convert
      * @return A string containing a Base64 image
      */
     protected String bitmapToBase64(Bitmap bitmap){
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Function to convert an Base64 encoded image to a bitmap
-     * @param encodedImage
+     * @param encodedImage The string we want to decode
      * @return A bitmap representing the decoded string
      */
     protected Bitmap base64ToBitmap(String encodedImage){
