@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST = 10;
     public static final int GALLERY_REQUEST = 20;
 
-    private Bitmap bitmap;
     private Uri imageUri;
 
     Button btnCamera;
@@ -49,15 +48,14 @@ public class MainActivity extends AppCompatActivity {
      * @param v
      */
     public void onCameraButtonClicked(View v){
-
-
-        if(!hasPermission()){
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        }
-        else{
+        // check if app is allowed to access local storage
+        if(hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            // if the permission is allowed, we prepare the image data to find his uri
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.TITLE, "New Picture");
             values.put(MediaStore.Images.Media.DESCRIPTION, "From the Camera");
+
+            // get the image uri
             imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
             // call the camera
@@ -67,7 +65,10 @@ public class MainActivity extends AppCompatActivity {
             //invoke the camera as an activity and get something back from it
             startActivityForResult(intent, CAMERA_REQUEST);
         }
-
+        else{
+            // if not, we make a request to the user to grant it
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
     }
 
     /**
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
         // if everything processed successfully
         if(resultCode == RESULT_OK) {
+            Bitmap bitmap;
 
             // if we are hearing back from using the camera
             if(requestCode == CAMERA_REQUEST){
@@ -127,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
                     bitmap = BitmapFactory.decodeStream(IS);
                     // display the image
                     imgView.setImageBitmap(bitmap);
+
                 } catch (Exception e){
                     e.printStackTrace();
                     // display an alert to the user
@@ -165,9 +168,14 @@ public class MainActivity extends AppCompatActivity {
         return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
     }
 
-    private Boolean hasPermission(){
+    /**
+     * Function to check if a specific permission is allowed
+     * @param permission
+     * @return True if the permission is allowed. False if it doesn't
+     */
+    private Boolean hasPermission(String permission){
         PackageManager pm = getBaseContext().getPackageManager();
-        int hasPerm = pm.checkPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, getBaseContext().getPackageName());
+        int hasPerm = pm.checkPermission(permission, getBaseContext().getPackageName());
         return hasPerm == PackageManager.PERMISSION_GRANTED;
     }
 }

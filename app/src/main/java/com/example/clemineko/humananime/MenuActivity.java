@@ -21,8 +21,10 @@ public class MenuActivity extends AppCompatActivity {
         btnCamera = findViewById(R.id.btnCamera);
         btnGallery = findViewById(R.id.btnGallery);
 
+        // check if we get data from another activity
         Intent intent = getIntent();
         if (intent != null) {
+            // get back the IP address if we come from the connection activity
             IP_ADRESS = intent.getStringExtra("EXTRA_IP");
         }
     }
@@ -33,6 +35,7 @@ public class MenuActivity extends AppCompatActivity {
      * @param v
      */
     public void onPictureButtonClicked(View v){
+        // call the main activity
         Intent intent = new Intent(MenuActivity.this, MainActivity.class);
         startActivity(intent);
     }
@@ -42,6 +45,7 @@ public class MenuActivity extends AppCompatActivity {
      * @param v
      */
     public void onConnectButtonClicked(View v){
+        // call the connection activity
         Intent intent = new Intent(MenuActivity.this, ConnectionActivity.class);
         startActivity(intent);
     }

@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:text="@string/enter_ip_adress"
-        android:textSize="30dp"/>
+        android:textSize="30sp"/>
 
     <EditText
         android:id="@+id/editText"
