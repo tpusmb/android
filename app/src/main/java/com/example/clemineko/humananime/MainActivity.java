@@ -8,11 +8,14 @@ import android.os.Environment;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 
@@ -71,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
      * Function used to handle the end of a request.
      * @param requestCode
      * @param resultCode
-     * @param data
+     * @param data  9j/4TxERXhpZgAASUkqAAgAAAAMAAABBAABAAAAwAwAAAEBBAABAAAALAc
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -107,5 +110,34 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+
+    /**
+     * Function to convert a bitmap to Base64 format
+     * @param bitmap The bitmap we want to convert
+     * @return A string containing a Base64 image
+     */
+    protected String bitmapToBase64(Bitmap bitmap){
+        // read bytes of the bitmap
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+
+        // encode them into Base64 string and return this string
+        return Base64.encodeToString(byteArray, Base64.NO_WRAP);
+    }
+
+    /**
+     * Function to convert an Base64 encoded image to a bitmap
+     * @param encodedImage The string we want to decode
+     * @return A bitmap representing the decoded string
+     */
+    protected Bitmap base64ToBitmap(String encodedImage){
+        // decode and convert the encoded image to bytes
+        byte[] decodedString = Base64.decode(encodedImage, Base64.NO_WRAP);
+
+        // create a bitmap from these bytes
+        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
     }
 }
