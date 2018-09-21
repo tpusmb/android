@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -30,11 +31,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final int CAMERA_REQUEST = 10;
     public static final int GALLERY_REQUEST = 20;
+    private static final String EXCHANGE_NAME = "task";
+
+    private boolean processDone;
 
     private Uri imageUri;
     private Bitmap bitmap;
@@ -42,6 +47,12 @@ public class MainActivity extends AppCompatActivity {
     Button btnCamera;
     Button btnGallery;
     ImageView imgView;
+
+    ConnectionFactory factory;
+    Connection connection;
+    Channel channel;
+    String queueName;
+    Consumer consumer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,30 +117,38 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onConvertButtonClicked(View v){
         if(bitmap != null){
+            processDone = false;
             Thread thread = new Thread(new Runnable() {
-
                 @Override
                 public void run() {
                     try {
-                        // connect to the IP
-                        ConnectionFactory factory = new ConnectionFactory();
-                        factory.setHost(Global.IP_ADRESS);
-                        Connection connection = factory.newConnection();
-                        Channel channel = connection.createChannel();
+                        if(channel == null){
+                            // connect to the IP
+                            factory = new ConnectionFactory();
+                            factory.setHost(Global.IP_ADRESS);
+                            connection = factory.newConnection();
+                            channel = connection.createChannel();
+                            channel.exchangeDeclare(EXCHANGE_NAME, "direct");
+                            queueName = channel.queueDeclare().getQueue();
+                            channel.queueBind(queueName, EXCHANGE_NAME, "result");
+                            consumer = new DefaultConsumer(channel) {
+                                @Override
+                                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
+                                        throws IOException {
+                                    String newB64Image = new String(body, "UTF-8");
+                                    Log.e("Message: ", newB64Image);
+                                    bitmap = base64ToBitmap(newB64Image);
+                                    Log.e("ProcessDone1: ", "" + processDone);
+                                    processDone = true;
+                                    Log.e("ProcessDone2: ", "" + processDone);
+                                }
+                            };
+                            channel.basicConsume(queueName, true, consumer);
+                        }
 
                         String base64Image = bitmapToBase64(Bitmap.createScaledBitmap(bitmap,(int)(bitmap.getWidth()*0.3), (int)(bitmap.getHeight()*0.3), true));
-                        channel.basicPublish("", "task", null, base64Image.getBytes());
+                        channel.basicPublish(EXCHANGE_NAME, "cat", null, base64Image.getBytes());
 
-                        Consumer consumer = new DefaultConsumer(channel) {
-                            @Override
-                            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-                                    throws IOException {
-                                String newB64Image = new String(body, "UTF-8");
-                                bitmap = base64ToBitmap(newB64Image);
-                                imgView.setImageBitmap(bitmap);
-                            }
-                        };
-                        channel.basicConsume("task", true, consumer);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -137,6 +156,13 @@ public class MainActivity extends AppCompatActivity {
             });
 
             thread.start();
+
+            while(!processDone){
+                Log.e("processDone3: ", "" + processDone);
+            }
+            Log.e("BasicConsule: ", "wowwow!");
+            imgView.setImageBitmap(bitmap);
+            Toast.makeText(this, "End of thread", Toast.LENGTH_LONG).show();
         }
     }
 
