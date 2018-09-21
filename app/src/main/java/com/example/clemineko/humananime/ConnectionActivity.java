@@ -30,6 +30,10 @@ public class ConnectionActivity extends AppCompatActivity  {
 
         btnConfirm = findViewById(R.id.btnConfirm);
         editText = findViewById(R.id.editText);
+
+        if(Global.IP_ADRESS != ""){
+            editText.setText(Global.IP_ADRESS);
+        }
     }
 
     /**
@@ -56,7 +60,7 @@ public class ConnectionActivity extends AppCompatActivity  {
                         String message = "Hello World!";
                         channel.basicPublish("", "task", null, message.getBytes());
 
-                        Consumer consumer = new DefaultConsumer(channel) {
+                        /*Consumer consumer = new DefaultConsumer(channel) {
                             @Override
                             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
                                     throws IOException {
@@ -64,18 +68,16 @@ public class ConnectionActivity extends AppCompatActivity  {
                                 editText.setText("Received: " + message);
                             }
                         };
-                        channel.basicConsume("task", true, consumer);
+                        channel.basicConsume("task", true, consumer);*/
+
+                        Global.IP_ADRESS = IP;
 
                         // call the menu activity with the IP address as an extra data
-                        /*Intent intent = new Intent(ConnectionActivity.this, MenuActivity.class);
-                        intent.putExtra("EXTRA_IP", IP);
-                        startActivity(intent);*/
+                        Intent intent = new Intent(ConnectionActivity.this, MenuActivity.class);
+                        startActivity(intent);
 
                     } catch(Exception e){
                         e.printStackTrace();
-                        // display an alert to the user
-                        editText.setText("Unable to connect");
-                        //Toast.makeText(this, "Unable to connect", Toast.LENGTH_LONG).show();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -33,10 +33,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:layout_marginBottom="16dp"
         android:background="@android:color/holo_blue_dark"
         android:text="@string/import_a_picture"
         android:textColor="@android:color/white"
 
         android:onClick="onGalleryButtonClicked"/>
+
+    <Button
+        android:id="@+id/btnConvert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"
+        android:background="@android:color/holo_blue_dark"
+        android:text="@string/convert_into_anime"
+        android:textColor="@android:color/white"
+
+        android:onClick="onConvertButtonClicked"/>
 
 </LinearLayout>

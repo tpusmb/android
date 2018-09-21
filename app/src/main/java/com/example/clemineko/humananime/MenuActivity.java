@@ -11,8 +11,6 @@ public class MenuActivity extends AppCompatActivity {
     Button btnCamera;
     Button btnGallery;
 
-    String IP_ADRESS = "nothing";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,13 +18,6 @@ public class MenuActivity extends AppCompatActivity {
 
         btnCamera = findViewById(R.id.btnCamera);
         btnGallery = findViewById(R.id.btnGallery);
-
-        // check if we get data from another activity
-        Intent intent = getIntent();
-        if (intent != null) {
-            // get back the IP address if we come from the connection activity
-            IP_ADRESS = intent.getStringExtra("EXTRA_IP");
-        }
     }
 
 

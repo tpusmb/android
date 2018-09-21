@@ -18,8 +18,17 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Consumer;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int GALLERY_REQUEST = 20;
 
     private Uri imageUri;
+    private Bitmap bitmap;
 
     Button btnCamera;
     Button btnGallery;
@@ -90,12 +100,52 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, GALLERY_REQUEST);
     }
 
+    /**
+     * Function to convert the image
+     * @param v
+     */
+    public void onConvertButtonClicked(View v){
+        if(bitmap != null){
+            Thread thread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        // connect to the IP
+                        ConnectionFactory factory = new ConnectionFactory();
+                        factory.setHost(Global.IP_ADRESS);
+                        Connection connection = factory.newConnection();
+                        Channel channel = connection.createChannel();
+
+                        String base64Image = bitmapToBase64(Bitmap.createScaledBitmap(bitmap,(int)(bitmap.getWidth()*0.3), (int)(bitmap.getHeight()*0.3), true));
+                        channel.basicPublish("", "task", null, base64Image.getBytes());
+
+                        Consumer consumer = new DefaultConsumer(channel) {
+                            @Override
+                            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
+                                    throws IOException {
+                                String newB64Image = new String(body, "UTF-8");
+                                bitmap = base64ToBitmap(newB64Image);
+                                imgView.setImageBitmap(bitmap);
+                            }
+                        };
+                        channel.basicConsume("task", true, consumer);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            thread.start();
+        }
+    }
+
 
     /**
      * Function used to handle the end of a request.
-     * @param requestCode
-     * @param resultCode
-     * @param data
+     * @param requestCode An int which identify who the result came from
+     * @param resultCode An int code returned by the child activity
+     * @param data An Intent which can have various data attached to it
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -103,7 +153,6 @@ public class MainActivity extends AppCompatActivity {
 
         // if everything processed successfully
         if(resultCode == RESULT_OK) {
-            Bitmap bitmap;
 
             // if we are hearing back from using the camera
             if(requestCode == CAMERA_REQUEST){
@@ -170,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Function to check if a specific permission is allowed
-     * @param permission
+     * @param permission The permission we want to check
      * @return True if the permission is allowed. False if it doesn't
      */
     private Boolean hasPermission(String permission){

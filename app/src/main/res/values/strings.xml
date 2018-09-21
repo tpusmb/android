@@ -2,9 +2,10 @@
     <string name="app_name">HumanAnime</string>
     <string name="take_a_picture">Take a picture</string>
     <string name="import_a_picture">Import a picture</string>
+    <string name="convert_into_anime">Convert into anime</string>
     <string name="work_with_picture">Work with picture</string>
     <string name="connect">Connect</string>
-    <string name="enter_ip_adress">Enter IP adress</string>
-    <string name="ip_adress">IP adress</string>
+    <string name="enter_ip_address">Enter IP address</string>
+    <string name="ip_address">IP address</string>
     <string name="confirm">Confirm</string>
 </resources>
