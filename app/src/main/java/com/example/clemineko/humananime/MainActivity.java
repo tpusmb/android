@@ -20,10 +20,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
@@ -31,28 +27,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Semaphore;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final int CAMERA_REQUEST = 10;
     public static final int GALLERY_REQUEST = 20;
-    private static final String EXCHANGE_NAME = "task";
-
-    private boolean processDone;
 
     private Uri imageUri;
     private Bitmap bitmap;
+    private Semaphore semaphore;
 
     Button btnCamera;
     Button btnGallery;
     ImageView imgView;
-
-    ConnectionFactory factory;
-    Connection connection;
-    Channel channel;
-    String queueName;
-    Consumer consumer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +50,28 @@ public class MainActivity extends AppCompatActivity {
         btnCamera = findViewById(R.id.btnCamera);
         btnGallery = findViewById(R.id.btnGallery);
         imgView = findViewById(R.id.imgView);
+
+        // a semaphore that will be unlocked with 1 authorization
+        semaphore = new Semaphore(1);
+
+        // create a function to receive the server response
+        Global.CONSUMER = new DefaultConsumer(Global.CHANNEL) {
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
+                    throws IOException {
+                // get the transformed image from the server
+                String newB64Image = new String(body, "UTF-8");
+                bitmap = base64ToBitmap(newB64Image);
+
+                // unlock the semaphore
+                semaphore.release();
+            }
+        };
     }
 
     /**
-     * Function called when the camera button is clicked.
-     * @param v
+     * Function called when the button "Take a picture" is clicked.
+     * @param v Current View.
      */
     public void onCameraButtonClicked(View v){
         // check if app is allowed to access local storage
@@ -93,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Function called when the gallery button is clicked.
-     * @param v
+     * Function called when the button "Import a picture" is clicked.
+     * @param v Current View.
      */
     public void onGalleryButtonClicked(View v){
         // call the image gallery
@@ -112,66 +117,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Function to convert the image
-     * @param v
+     * Function called when the button "Convert into anime" is clicked.
+     * @param v Current View.
      */
-    public void onConvertButtonClicked(View v){
-        if(bitmap != null){
-            processDone = false;
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if(channel == null){
-                            // connect to the IP
-                            factory = new ConnectionFactory();
-                            factory.setHost(Global.IP_ADRESS);
-                            connection = factory.newConnection();
-                            channel = connection.createChannel();
-                            channel.exchangeDeclare(EXCHANGE_NAME, "direct");
-                            queueName = channel.queueDeclare().getQueue();
-                            channel.queueBind(queueName, EXCHANGE_NAME, "result");
-                            consumer = new DefaultConsumer(channel) {
-                                @Override
-                                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-                                        throws IOException {
-                                    String newB64Image = new String(body, "UTF-8");
-                                    Log.e("Message: ", newB64Image);
-                                    bitmap = base64ToBitmap(newB64Image);
-                                    Log.e("ProcessDone1: ", "" + processDone);
-                                    processDone = true;
-                                    Log.e("ProcessDone2: ", "" + processDone);
-                                }
-                            };
-                            channel.basicConsume(queueName, true, consumer);
-                        }
+    public void onConvertAnimeButtonClicked(View v){
+        convertImage("anime");
+    }
 
-                        String base64Image = bitmapToBase64(Bitmap.createScaledBitmap(bitmap,(int)(bitmap.getWidth()*0.3), (int)(bitmap.getHeight()*0.3), true));
-                        channel.basicPublish(EXCHANGE_NAME, "cat", null, base64Image.getBytes());
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            thread.start();
-
-            while(!processDone){
-                Log.e("processDone3: ", "" + processDone);
-            }
-            Log.e("BasicConsule: ", "wowwow!");
-            imgView.setImageBitmap(bitmap);
-            Toast.makeText(this, "End of thread", Toast.LENGTH_LONG).show();
-        }
+    /**
+     * Function called when the button "Convert into cat" is clicked.
+     * @param v Current View.
+     */
+    public void onConvertCatButtonClicked(View v){
+        convertImage("cat");
     }
 
 
     /**
      * Function used to handle the end of a request.
-     * @param requestCode An int which identify who the result came from
-     * @param resultCode An int code returned by the child activity
-     * @param data An Intent which can have various data attached to it
+     * @param requestCode An int which identify who the result came from.
+     * @param resultCode An int code returned by the child activity.
+     * @param data An Intent which can have various data attached to it.
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -216,9 +182,51 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     * Function to convert a bitmap to Base64 format
-     * @param bitmap The bitmap we want to convert
-     * @return A string containing a Base64 image
+     * Function to convert the image.
+     * @param conversionType The type of conversion we want to apply to the image.
+     */
+    protected void convertImage(final String conversionType){
+        // test if there is an image selected and if the app has been connected with the server.
+        if(bitmap == null) Toast.makeText(this, "No image", Toast.LENGTH_LONG).show();
+        else if (Global.CHANNEL == null) Toast.makeText(this, "No connection configured", Toast.LENGTH_LONG).show();
+        else{
+            // create a thread to communicate with the server
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        // reduce the image size and convert it into base64. A large image is slower to send and unnecessary
+                        String base64Image = bitmapToBase64(resizeBitmap(bitmap));
+                        // send the base64 image to the server
+                        Global.CHANNEL.basicPublish(Global.EXCHANGE_NAME, conversionType, null, base64Image.getBytes());
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            thread.start();
+
+            // wait for the semaphore to be unlocked
+            try {
+                semaphore.acquire() ;
+
+                // if the process terminated correctly: display the transformed image
+                imgView.setImageBitmap(bitmap);
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+
+    /**
+     * Function to convert a bitmap to Base64 format.
+     * @param bitmap The bitmap we want to convert.
+     * @return A string containing a Base64 image.
      */
     protected String bitmapToBase64(Bitmap bitmap){
         // read bytes of the bitmap
@@ -231,9 +239,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Function to convert an Base64 encoded image to a bitmap
-     * @param encodedImage The string we want to decode
-     * @return A bitmap representing the decoded string
+     * Function to convert a Base64 encoded image to a Bitmap.
+     * @param encodedImage The String we want to decode.
+     * @return A Bitmap representing the decoded string.
      */
     protected Bitmap base64ToBitmap(String encodedImage){
         // decode and convert the encoded image to bytes
@@ -244,9 +252,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Function to check if a specific permission is allowed
-     * @param permission The permission we want to check
-     * @return True if the permission is allowed. False if it doesn't
+     * Function to resize a Bitmap if it is too large
+     * @param bitmapToResize The Bitmap we want to resize
+     * @return A resized Bitmap
+     */
+    protected Bitmap resizeBitmap(Bitmap bitmapToResize){
+        // get the image size
+        int bitmapSize = bitmapToResize.getWidth() * bitmapToResize.getHeight();
+
+        // set the reduction ratio depending of the image size
+        double ratio = 1.0;
+        if(bitmapSize > 4000000) ratio = 0.2;
+        else if(bitmapSize > 1000000) ratio = 0.4;
+        else if(bitmapSize > 500000) ratio = 0.6;
+        else if(bitmapSize > 250000) ratio = 0.8;
+
+        // apply the ratio to both image's width and height
+        return  Bitmap.createScaledBitmap(bitmapToResize,(int)(bitmap.getWidth()*ratio), (int)(bitmapToResize.getHeight()*ratio), true);
+    }
+
+    /**
+     * Function to check if a specific permission is allowed.
+     * @param permission The permission we want to check.
+     * @return True if the permission is allowed. False if it doesn't.
      */
     private Boolean hasPermission(String permission){
         PackageManager pm = getBaseContext().getPackageManager();

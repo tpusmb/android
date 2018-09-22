@@ -23,7 +23,7 @@ public class MenuActivity extends AppCompatActivity {
 
     /**
      * Function called when the "Work with picture" button is clicked.
-     * @param v
+     * @param v Current View.
      */
     public void onPictureButtonClicked(View v){
         // call the main activity
@@ -33,7 +33,7 @@ public class MenuActivity extends AppCompatActivity {
 
     /**
      * Function called when the "Connect" button is clicked.
-     * @param v
+     * @param v Current View.
      */
     public void onConnectButtonClicked(View v){
         // call the connection activity

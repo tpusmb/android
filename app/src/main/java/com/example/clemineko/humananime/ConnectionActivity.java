@@ -6,17 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
-
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-
-import java.io.IOException;
 
 public class ConnectionActivity extends AppCompatActivity  {
 
@@ -31,54 +20,50 @@ public class ConnectionActivity extends AppCompatActivity  {
         btnConfirm = findViewById(R.id.btnConfirm);
         editText = findViewById(R.id.editText);
 
-        if(Global.IP_ADRESS != ""){
-            editText.setText(Global.IP_ADRESS);
+        if(!Global.IP_ADDRESS.equals("")){
+            editText.setText(Global.IP_ADDRESS);
         }
     }
 
     /**
      * Function called when the "Connect" button is clicked.
-     * @param v
+     * @param v Current View.
      */
     public void onConfirmButtonClicked(View v){
-
+        // create a thread to make a connection with a RabbitMQ server
         Thread thread = new Thread(new Runnable() {
 
             @Override
             public void run() {
-                try  {
+                try {
                     // get the entered text by the user
                     String IP = editText.getText().toString();
 
-                    try{
-                        // connect to the specified IP
-                        ConnectionFactory factory = new ConnectionFactory();
-                        factory.setHost(IP);
-                        Connection connection = factory.newConnection();
-                        Channel channel = connection.createChannel();
+                    if (!Global.IP_ADDRESS.equals(IP)){
+                        // connect to the IP
+                        Global.FACTORY.setHost(IP);
+                        Global.CONNECTION = Global.FACTORY.newConnection();
 
-                        String message = "Hello World!";
-                        channel.basicPublish("", "task", null, message.getBytes());
+                        // set a channel if it's the first time the user is trying a connection
+                        if(Global.CHANNEL == null) {
+                            Global.CHANNEL.exchangeDeclare(Global.EXCHANGE_NAME, "direct");
+                            Global.QUEUE_NAME = Global.CHANNEL.queueDeclare().getQueue();
+                            Global.CHANNEL.queueBind(Global.QUEUE_NAME, Global.EXCHANGE_NAME, "result");
+                            Global.CHANNEL.basicConsume(Global.QUEUE_NAME, true, Global.CONSUMER);
+                        }
 
-                        /*Consumer consumer = new DefaultConsumer(channel) {
-                            @Override
-                            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-                                    throws IOException {
-                                String message = new String(body, "UTF-8");
-                                editText.setText("Received: " + message);
-                            }
-                        };
-                        channel.basicConsume("task", true, consumer);*/
-
-                        Global.IP_ADRESS = IP;
-
-                        // call the menu activity with the IP address as an extra data
-                        Intent intent = new Intent(ConnectionActivity.this, MenuActivity.class);
-                        startActivity(intent);
-
-                    } catch(Exception e){
-                        e.printStackTrace();
+                        // save the IP address
+                        Global.IP_ADDRESS = IP;
                     }
+
+                    // quick send to test the connection
+                    String message = "Connection from android application";
+                    Global.CHANNEL.basicPublish("", "Test", null, message.getBytes());
+
+                    // call the menu activity
+                    Intent intent = new Intent(ConnectionActivity.this, MenuActivity.class);
+                    startActivity(intent);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -86,6 +71,5 @@ public class ConnectionActivity extends AppCompatActivity  {
         });
 
         thread.start();
-
     }
 }

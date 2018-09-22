@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">HumanAnime</string>
+    <string name="image_view">ImageView</string>
     <string name="take_a_picture">Take a picture</string>
     <string name="import_a_picture">Import a picture</string>
     <string name="convert_into_anime">Convert into anime</string>
+    <string name="convert_into_cat">Convert into cat</string>
     <string name="work_with_picture">Work with picture</string>
     <string name="connect">Connect</string>
     <string name="enter_ip_address">Enter IP address</string>
