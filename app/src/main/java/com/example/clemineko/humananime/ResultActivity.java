@@ -1,6 +1,8 @@
 package com.example.clemineko.humananime;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -34,12 +36,11 @@ public class ResultActivity extends AppCompatActivity {
             bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
 
             // display the image
-            resultImageView.setImageBitmap(bitmap);
+            setBitmapToImageView();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -61,5 +62,20 @@ public class ResultActivity extends AppCompatActivity {
             // tell the user the work is done (not mine by the way...)
             Toast.makeText(this, "Picture saved", Toast.LENGTH_LONG).show();
         }
+    }
+
+    /**
+     * Function to display the bitmap using the ImageView.
+     * Remove the background color if it's the first time an image is displayed through this ImageView.
+     */
+    protected void setBitmapToImageView(){
+        // display the bitmap
+        resultImageView.setImageBitmap(bitmap);
+
+        // get the background of the ImageView
+        ColorDrawable drawable = (ColorDrawable) resultImageView.getBackground();
+
+        // make the background transparent if it was not
+        if(drawable.getColor() != Color.TRANSPARENT) resultImageView.setBackgroundColor(Color.TRANSPARENT);
     }
 }

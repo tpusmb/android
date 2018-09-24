@@ -17,6 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:adjustViewBounds="true"
+        android:background="#CFE0E6"
         android:contentDescription="@string/image_view" />
 
     <Button
