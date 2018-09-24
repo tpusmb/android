@@ -13,8 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".MenuActivity">
+        <activity android:name=".MenuActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,10 +22,13 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize"/>
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".ConnectionActivity"
-            android:configChanges="keyboard|orientation|screenSize"/>
+            android:configChanges="keyboard|orientation|screenSize" />
+        <activity
+            android:name=".ResultActivity"
+            android:configChanges="orientation|screenSize"/>
     </application>
 
 </manifest>

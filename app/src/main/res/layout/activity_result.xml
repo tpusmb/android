@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_marginTop="16dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    tools:context=".ResultActivity">
+
+    <ImageView
+        android:id="@+id/resultImageView"
+        android:layout_weight="25"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/image_view" />
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"
+        android:background="@android:color/holo_blue_dark"
+        android:text="@string/save_picture"
+        android:textColor="@android:color/white"
+
+        android:onClick="onSaveButtonClicked"/>
+
+</LinearLayout>

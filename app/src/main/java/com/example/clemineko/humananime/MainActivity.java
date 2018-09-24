@@ -27,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 public class MainActivity extends AppCompatActivity {
@@ -161,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
             // if we are hearing back from the image gallery
             else if(requestCode == GALLERY_REQUEST){
                 // get the image address
-                Uri imageUri = data.getData();
+                imageUri = data.getData();
 
                 try{
                     // read the image data
@@ -212,14 +213,26 @@ public class MainActivity extends AppCompatActivity {
             try {
                 semaphore.acquire() ;
 
-                // if the process terminated correctly: display the transformed image
+                // if the process terminated correctly: change the image displayed on this activity for reuse purpose...
                 imgView.setImageBitmap(bitmap);
+
+                // ...then call the result activity
+                startResultActivity();
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    /**
+     * Function that call the result activity. Put the image URI as an extra data
+     */
+    protected void startResultActivity(){
+        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+        intent.putExtra("imageURI", imageUri);
+        startActivity(intent);
     }
 
 
