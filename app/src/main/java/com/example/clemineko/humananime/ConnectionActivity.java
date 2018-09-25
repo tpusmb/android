@@ -3,20 +3,14 @@ package com.example.clemineko.humananime;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-
-import java.io.IOException;
+import com.rabbitmq.client.ShutdownListener;
+import com.rabbitmq.client.ShutdownSignalException;
 
 public class ConnectionActivity extends AppCompatActivity  {
 
@@ -30,53 +24,53 @@ public class ConnectionActivity extends AppCompatActivity  {
 
         btnConfirm = findViewById(R.id.btnConfirm);
         editText = findViewById(R.id.editText);
+
+        if(!Global.IP_ADDRESS.equals("")){
+            editText.setText(Global.IP_ADDRESS);
+        }
     }
 
     /**
      * Function called when the "Connect" button is clicked.
-     * @param v
+     * @param v Current View.
      */
     public void onConfirmButtonClicked(View v){
-
+        // create a thread to make a connection with a RabbitMQ server
         Thread thread = new Thread(new Runnable() {
 
             @Override
             public void run() {
-                try  {
+                try {
                     // get the entered text by the user
-                    String IP = editText.getText().toString();
+                    String IP = "192.168.1.3";//editText.getText().toString();
 
-                    try{
-                        // connect to the specified IP
-                        ConnectionFactory factory = new ConnectionFactory();
-                        factory.setHost(IP);
-                        Connection connection = factory.newConnection();
-                        Channel channel = connection.createChannel();
+                    if (!Global.IP_ADDRESS.equals(IP)){
+                        Global.FACTORY = new ConnectionFactory();
+                        // connect to the IP
+                        Global.FACTORY.setHost(IP);
 
-                        String message = "Hello World!";
-                        channel.basicPublish("", "task", null, message.getBytes());
+                        Global.CONNECTION = Global.FACTORY.newConnection();
 
-                        Consumer consumer = new DefaultConsumer(channel) {
-                            @Override
-                            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-                                    throws IOException {
-                                String message = new String(body, "UTF-8");
-                                editText.setText("Received: " + message);
-                            }
-                        };
-                        channel.basicConsume("task", true, consumer);
+                        // set a channel if it's the first time the user is trying a connection
+                        Global.CHANNEL = Global.CONNECTION.createChannel();
+                        Global.CHANNEL.exchangeDeclare(Global.EXCHANGE_NAME, "direct");
 
-                        // call the menu activity with the IP address as an extra data
-                        /*Intent intent = new Intent(ConnectionActivity.this, MenuActivity.class);
-                        intent.putExtra("EXTRA_IP", IP);
-                        startActivity(intent);*/
+                        Global.QUEUE_NAME = Global.CHANNEL.queueDeclare().getQueue();
 
-                    } catch(Exception e){
-                        e.printStackTrace();
-                        // display an alert to the user
-                        editText.setText("Unable to connect");
-                        //Toast.makeText(this, "Unable to connect", Toast.LENGTH_LONG).show();
+                        Global.CHANNEL.queueBind(Global.QUEUE_NAME, Global.EXCHANGE_NAME, "result");
+
+                        // save the IP address
+                        Global.IP_ADDRESS = IP;
                     }
+
+                    // quick send to test the connection
+                    /*String message = "Connection from android application";
+                    Global.CHANNEL.basicPublish("", "Test", null, message.getBytes());*/
+
+                    // call the menu activity
+                    Intent intent = new Intent(ConnectionActivity.this, MenuActivity.class);
+                    startActivity(intent);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -84,6 +78,5 @@ public class ConnectionActivity extends AppCompatActivity  {
         });
 
         thread.start();
-
     }
 }

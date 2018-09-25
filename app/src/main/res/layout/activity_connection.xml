@@ -13,21 +13,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:text="@string/enter_ip_adress"
+        android:text="@string/enter_ip_address"
         android:textSize="30sp"/>
 
     <EditText
         android:id="@+id/editText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:ems="10"
         android:inputType="none"
-        android:text="@string/ip_adress" />
+        android:hint="@string/ip_address" />
 
     <Button
         android:id="@+id/btnConfirm"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
         android:layout_weight="1"
         android:background="@android:color/holo_blue_dark"
         android:text="@string/confirm"
