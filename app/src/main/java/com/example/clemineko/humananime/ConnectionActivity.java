@@ -3,9 +3,13 @@ package com.example.clemineko.humananime;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.rabbitmq.client.ShutdownListener;
+import com.rabbitmq.client.ShutdownSignalException;
 
 public class ConnectionActivity extends AppCompatActivity  {
 
@@ -46,6 +50,7 @@ public class ConnectionActivity extends AppCompatActivity  {
 
                         // set a channel if it's the first time the user is trying a connection
                         if(Global.CHANNEL == null) {
+                            Global.CHANNEL = Global.CONNECTION.createChannel();
                             Global.CHANNEL.exchangeDeclare(Global.EXCHANGE_NAME, "direct");
                             Global.QUEUE_NAME = Global.CHANNEL.queueDeclare().getQueue();
                             Global.CHANNEL.queueBind(Global.QUEUE_NAME, Global.EXCHANGE_NAME, "result");
@@ -57,8 +62,8 @@ public class ConnectionActivity extends AppCompatActivity  {
                     }
 
                     // quick send to test the connection
-                    String message = "Connection from android application";
-                    Global.CHANNEL.basicPublish("", "Test", null, message.getBytes());
+                    /*String message = "Connection from android application";
+                    Global.CHANNEL.basicPublish("", "Test", null, message.getBytes());*/
 
                     // call the menu activity
                     Intent intent = new Intent(ConnectionActivity.this, MenuActivity.class);
