@@ -15,6 +15,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         // a semaphore that will be unlocked with 1 authorization
         semaphore = new Semaphore(0);
 
+        // create a function to receive the server response
         Thread thread;
         thread = new Thread(new Runnable() {
             @Override
@@ -69,7 +71,9 @@ public class MainActivity extends AppCompatActivity {
                             bitmap = base64ToBitmap(newB64Image);
 
                             // unlock the semaphore
+                            Log.e("Test1", "" + semaphore.getQueueLength());
                             semaphore.release();
+                            Log.e("Test2", "" + semaphore.getQueueLength());
                         }
                     };
 
@@ -77,13 +81,17 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             }
         });
 
         thread.start();
-        // create a function to receive the server response
 
+        // get extra data
+        byte[] byteArray = getIntent().getByteArrayExtra("imageBytes");
+        if(byteArray != null){
+            bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+            setBitmapToImageView();
+        }
     }
 
     /**
@@ -227,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
 
             // wait for the semaphore to be unlocked
             try {
-                semaphore.acquire() ;
+                semaphore.acquire();
 
                 // if the process terminated correctly: change the image displayed on this activity for reuse purpose...
                 setBitmapToImageView();
@@ -243,11 +251,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Function that call the result activity. Put the image URI as an extra data
+     * Function that call the result activity. Put the image bytes data as an extra data
      */
     protected void startResultActivity(){
         Intent intent = new Intent(MainActivity.this, ResultActivity.class);
-        intent.putExtra("imageURI", imageUri);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        // create and compress a copy of our image
+        Bitmap compressedBitmap = bitmap;
+        compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
+        // get the bitmap bytes
+        byte[] byteArray = stream.toByteArray();
+
+        // add these bytes to the intent and call the result activity
+        intent.putExtra("imageBytes", byteArray);
         startActivity(intent);
     }
 
