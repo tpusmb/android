@@ -52,21 +52,37 @@ public class MainActivity extends AppCompatActivity {
         imgView = findViewById(R.id.imgView);
 
         // a semaphore that will be unlocked with 1 authorization
-        semaphore = new Semaphore(1);
+        semaphore = new Semaphore(0);
 
-        // create a function to receive the server response
-        Global.CONSUMER = new DefaultConsumer(Global.CHANNEL) {
+        Thread thread;
+        thread = new Thread(new Runnable() {
             @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-                    throws IOException {
-                // get the transformed image from the server
-                String newB64Image = new String(body, "UTF-8");
-                bitmap = base64ToBitmap(newB64Image);
+            public void run() {
+                try {
+                    Global.CONSUMER = new DefaultConsumer(Global.CHANNEL) {
+                        @Override
+                        public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
+                                throws IOException {
+                            // get the transformed image from the server
+                            String newB64Image = new String(body, "UTF-8");
+                            bitmap = base64ToBitmap(newB64Image);
 
-                // unlock the semaphore
-                semaphore.release();
+                            // unlock the semaphore
+                            semaphore.release();
+                        }
+                    };
+
+                    Global.CHANNEL.basicConsume(Global.QUEUE_NAME, true, Global.CONSUMER);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
-        };
+        });
+
+        thread.start();
+        // create a function to receive the server response
+
     }
 
     /**
@@ -210,8 +226,7 @@ public class MainActivity extends AppCompatActivity {
 
             // wait for the semaphore to be unlocked
             try {
-                semaphore.acquire() ;
-
+                semaphore.acquire();
                 // if the process terminated correctly: display the transformed image
                 imgView.setImageBitmap(bitmap);
 
