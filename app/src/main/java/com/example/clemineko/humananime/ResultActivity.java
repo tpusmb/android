@@ -1,6 +1,5 @@
 package com.example.clemineko.humananime;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -13,7 +12,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Random;
 
 public class ResultActivity extends AppCompatActivity {

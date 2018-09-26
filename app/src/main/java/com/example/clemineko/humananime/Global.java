@@ -17,13 +17,12 @@ public class Global {
     public static String IP_ADDRESS = "";
     public static String EXCHANGE_NAME = "task";
 
-    public static Bitmap BITMAP;
-
     public static ConnectionFactory FACTORY;
     public static Connection CONNECTION;
     public static String QUEUE_NAME;
     public static Channel CHANNEL = null;
     public static Consumer CONSUMER = null;
 
+    public static Bitmap BITMAP;
     public static Semaphore SEMAPHORE;
 }
