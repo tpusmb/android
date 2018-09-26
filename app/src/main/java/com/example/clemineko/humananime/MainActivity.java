@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -37,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
     public static final int GALLERY_REQUEST = 20;
 
     private Uri imageUri;
-    private Bitmap bitmap;
 
     Button btnCamera;
     Button btnGallery;
@@ -55,33 +55,35 @@ public class MainActivity extends AppCompatActivity {
         // a semaphore that will be unlocked with 1 authorization
         Global.SEMAPHORE = new Semaphore(0);
 
-        // create a function to receive the server response
-        Thread thread;
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Global.CONSUMER = new DefaultConsumer(Global.CHANNEL) {
-                        @Override
-                        public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-                                throws IOException {
-                            // get the transformed image from the server
-                            String newB64Image = new String(body, "UTF-8");
-                            bitmap = base64ToBitmap(newB64Image);
+        if(Global.CONSUMER == null){
+            // create a function to receive the server response
+            final Thread thread;
+            thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Global.CONSUMER = new DefaultConsumer(Global.CHANNEL) {
+                            @Override
+                            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
+                                    throws IOException {
+                                // get the transformed image from the server
+                                String newB64Image = new String(body, "UTF-8");
+                                Global.BITMAP = base64ToBitmap(newB64Image);
 
-                            // unlock the semaphore
-                            Global.SEMAPHORE.release();
-                        }
-                    };
+                                // unlock the semaphore
+                                Global.SEMAPHORE.release();
+                            }
+                        };
 
-                    Global.CHANNEL.basicConsume(Global.QUEUE_NAME, true, Global.CONSUMER);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                        Global.CHANNEL.basicConsume(Global.QUEUE_NAME, true, Global.CONSUMER);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
 
-        thread.start();
+            thread.start();
+        }
     }
 
     /**
@@ -165,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             if(requestCode == CAMERA_REQUEST){
                 try{
                     // get a bitmap thanks to his uri
-                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                    Global.BITMAP = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                     // display the image
                     setBitmapToImageView();
 
@@ -182,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
                     // read the image data
                     InputStream IS = getContentResolver().openInputStream(imageUri);
                     // get a bitmap from the stream
-                    bitmap = BitmapFactory.decodeStream(IS);
+                    Global.BITMAP = BitmapFactory.decodeStream(IS);
                     // display the image
                     setBitmapToImageView();
 
@@ -202,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
      */
     protected void convertImage(final String conversionType){
         // test if there is an image selected and if the app has been connected with the server.
-        if(bitmap == null) Toast.makeText(this, "No image", Toast.LENGTH_LONG).show();
+        if(Global.BITMAP == null) Toast.makeText(this, "No image", Toast.LENGTH_LONG).show();
         else if (Global.CHANNEL == null) Toast.makeText(this, "No connection configured", Toast.LENGTH_LONG).show();
         else{
             // create a thread to communicate with the server
@@ -211,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     try {
                         // reduce the image size and convert it into base64. A large image is slower to send and unnecessary
-                        String base64Image = bitmapToBase64(resizeBitmap(bitmap));
+                        String base64Image = bitmapToBase64(resizeBitmap(Global.BITMAP));
                         // send the base64 image to the server
                         Global.CHANNEL.basicPublish(Global.EXCHANGE_NAME, conversionType, null, base64Image.getBytes());
 
@@ -248,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
         // create and compress a copy of our image
-        Bitmap compressedBitmap = bitmap;
+        Bitmap compressedBitmap = Global.BITMAP;
         compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
 
         // get the bitmap bytes
@@ -266,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
      */
     protected void setBitmapToImageView(){
         // display the bitmap
-        imgView.setImageBitmap(bitmap);
+        imgView.setImageBitmap(Global.BITMAP);
 
         // get the background of the ImageView
         ColorDrawable drawable = (ColorDrawable) imgView.getBackground();
@@ -321,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
         else if(bitmapSize > 250000) ratio = 0.8;
 
         // apply the ratio to both image's width and height
-        return  Bitmap.createScaledBitmap(bitmapToResize,(int)(bitmap.getWidth()*ratio), (int)(bitmapToResize.getHeight()*ratio), true);
+        return  Bitmap.createScaledBitmap(bitmapToResize,(int)(Global.BITMAP.getWidth()*ratio), (int)(bitmapToResize.getHeight()*ratio), true);
     }
 
     /**
