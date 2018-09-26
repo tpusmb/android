@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Uri imageUri;
     private Bitmap bitmap;
-    private Semaphore semaphore;
 
     Button btnCamera;
     Button btnGallery;
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         imgView = findViewById(R.id.imgView);
 
         // a semaphore that will be unlocked with 1 authorization
-        semaphore = new Semaphore(0);
+        Global.SEMAPHORE = new Semaphore(0);
 
         // create a function to receive the server response
         Thread thread;
@@ -71,9 +70,7 @@ public class MainActivity extends AppCompatActivity {
                             bitmap = base64ToBitmap(newB64Image);
 
                             // unlock the semaphore
-                            Log.e("Test1", "" + semaphore.getQueueLength());
-                            semaphore.release();
-                            Log.e("Test2", "" + semaphore.getQueueLength());
+                            Global.SEMAPHORE.release();
                         }
                     };
 
@@ -85,13 +82,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         thread.start();
-
-        // get extra data
-        byte[] byteArray = getIntent().getByteArrayExtra("imageBytes");
-        if(byteArray != null){
-            bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-            setBitmapToImageView();
-        }
     }
 
     /**
@@ -235,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
             // wait for the semaphore to be unlocked
             try {
-                semaphore.acquire();
+                Global.SEMAPHORE.acquire();
 
                 // if the process terminated correctly: change the image displayed on this activity for reuse purpose...
                 setBitmapToImageView();

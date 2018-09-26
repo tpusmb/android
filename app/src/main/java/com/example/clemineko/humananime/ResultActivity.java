@@ -58,22 +58,6 @@ public class ResultActivity extends AppCompatActivity {
             // tell the user the work is done (not mine by the way...)
             Toast.makeText(this, "Picture saved", Toast.LENGTH_LONG).show();
         }
-
-        // return to the main Activity
-        Intent intent = new Intent(ResultActivity.this, MainActivity.class);
-
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-        // create and compress a copy of our image
-        Bitmap compressedBitmap = bitmap;
-        compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-
-        // get the bitmap bytes
-        byte[] byteArray = stream.toByteArray();
-
-        // add these bytes to the intent and call the result activity
-        intent.putExtra("imageBytes", byteArray);
-        startActivity(intent);
     }
 
     /**

@@ -5,6 +5,8 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Consumer;
 
+import java.util.concurrent.Semaphore;
+
 /**
  * Class for global variables.
  */
@@ -18,4 +20,6 @@ public class Global {
     public static String QUEUE_NAME;
     public static Channel CHANNEL = null;
     public static Consumer CONSUMER;
+
+    public static Semaphore SEMAPHORE;
 }
