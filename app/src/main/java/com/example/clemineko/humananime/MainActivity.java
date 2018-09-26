@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
@@ -13,7 +15,6 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -35,8 +36,6 @@ public class MainActivity extends AppCompatActivity {
     public static final int GALLERY_REQUEST = 20;
 
     private Uri imageUri;
-    private Bitmap bitmap;
-    private Semaphore semaphore;
 
     Button btnCamera;
     Button btnGallery;
@@ -52,37 +51,37 @@ public class MainActivity extends AppCompatActivity {
         imgView = findViewById(R.id.imgView);
 
         // a semaphore that will be unlocked with 1 authorization
-        semaphore = new Semaphore(0);
+        Global.SEMAPHORE = new Semaphore(0);
 
-        Thread thread;
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Global.CONSUMER = new DefaultConsumer(Global.CHANNEL) {
-                        @Override
-                        public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-                                throws IOException {
-                            // get the transformed image from the server
-                            String newB64Image = new String(body, "UTF-8");
-                            bitmap = base64ToBitmap(newB64Image);
+        if(Global.CONSUMER == null){
+            // create a function to receive the server response
+            final Thread thread;
+            thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Global.CONSUMER = new DefaultConsumer(Global.CHANNEL) {
+                            @Override
+                            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
+                                    throws IOException {
+                                // get the transformed image from the server
+                                String newB64Image = new String(body, "UTF-8");
+                                Global.BITMAP = base64ToBitmap(newB64Image);
 
-                            // unlock the semaphore
-                            semaphore.release();
-                        }
-                    };
+                                // unlock the semaphore
+                                Global.SEMAPHORE.release();
+                            }
+                        };
 
-                    Global.CHANNEL.basicConsume(Global.QUEUE_NAME, true, Global.CONSUMER);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                        Global.CHANNEL.basicConsume(Global.QUEUE_NAME, true, Global.CONSUMER);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
+            });
 
-            }
-        });
-
-        thread.start();
-        // create a function to receive the server response
-
+            thread.start();
+        }
     }
 
     /**
@@ -166,9 +165,9 @@ public class MainActivity extends AppCompatActivity {
             if(requestCode == CAMERA_REQUEST){
                 try{
                     // get a bitmap thanks to his uri
-                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                    Global.BITMAP = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                     // display the image
-                    imgView.setImageBitmap(bitmap);
+                    setBitmapToImageView();
 
                 } catch (Exception e){
                     e.printStackTrace();
@@ -177,15 +176,15 @@ public class MainActivity extends AppCompatActivity {
             // if we are hearing back from the image gallery
             else if(requestCode == GALLERY_REQUEST){
                 // get the image address
-                Uri imageUri = data.getData();
+                imageUri = data.getData();
 
                 try{
                     // read the image data
                     InputStream IS = getContentResolver().openInputStream(imageUri);
                     // get a bitmap from the stream
-                    bitmap = BitmapFactory.decodeStream(IS);
+                    Global.BITMAP = BitmapFactory.decodeStream(IS);
                     // display the image
-                    imgView.setImageBitmap(bitmap);
+                    setBitmapToImageView();
 
                 } catch (Exception e){
                     e.printStackTrace();
@@ -203,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
      */
     protected void convertImage(final String conversionType){
         // test if there is an image selected and if the app has been connected with the server.
-        if(bitmap == null) Toast.makeText(this, "No image", Toast.LENGTH_LONG).show();
+        if(Global.BITMAP == null) Toast.makeText(this, "No image", Toast.LENGTH_LONG).show();
         else if (Global.CHANNEL == null) Toast.makeText(this, "No connection configured", Toast.LENGTH_LONG).show();
         else{
             // create a thread to communicate with the server
@@ -212,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     try {
                         // reduce the image size and convert it into base64. A large image is slower to send and unnecessary
-                        String base64Image = bitmapToBase64(resizeBitmap(bitmap));
+                        String base64Image = bitmapToBase64(resizeBitmap(Global.BITMAP));
                         // send the base64 image to the server
                         Global.CHANNEL.basicPublish(Global.EXCHANGE_NAME, conversionType, null, base64Image.getBytes());
 
@@ -226,15 +225,54 @@ public class MainActivity extends AppCompatActivity {
 
             // wait for the semaphore to be unlocked
             try {
-                semaphore.acquire();
-                // if the process terminated correctly: display the transformed image
-                imgView.setImageBitmap(bitmap);
+                Global.SEMAPHORE.acquire();
+
+                // if the process terminated correctly: change the image displayed on this activity for reuse purpose...
+                setBitmapToImageView();
+
+                // ...then call the result activity
+                startResultActivity();
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    /**
+     * Function that call the result activity. Put the image bytes data as an extra data
+     */
+    protected void startResultActivity(){
+        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        // create and compress a copy of our image
+        Bitmap compressedBitmap = Global.BITMAP;
+        compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
+        // get the bitmap bytes
+        byte[] byteArray = stream.toByteArray();
+
+        // add these bytes to the intent and call the result activity
+        intent.putExtra("imageBytes", byteArray);
+        startActivity(intent);
+    }
+
+
+    /**
+     * Function to display the bitmap using the ImageView.
+     * Remove the background color if it's the first time an image is displayed through this ImageView.
+     */
+    protected void setBitmapToImageView(){
+        // display the bitmap
+        imgView.setImageBitmap(Global.BITMAP);
+
+        // get the background of the ImageView
+        ColorDrawable drawable = (ColorDrawable) imgView.getBackground();
+
+        // make the background transparent if it was not
+        if(drawable.getColor() != Color.TRANSPARENT) imgView.setBackgroundColor(Color.TRANSPARENT);
     }
 
 
@@ -283,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
         else if(bitmapSize > 250000) ratio = 0.8;
 
         // apply the ratio to both image's width and height
-        return  Bitmap.createScaledBitmap(bitmapToResize,(int)(bitmap.getWidth()*ratio), (int)(bitmapToResize.getHeight()*ratio), true);
+        return  Bitmap.createScaledBitmap(bitmapToResize,(int)(Global.BITMAP.getWidth()*ratio), (int)(bitmapToResize.getHeight()*ratio), true);
     }
 
     /**
