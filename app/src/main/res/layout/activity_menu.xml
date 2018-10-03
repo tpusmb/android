@@ -15,10 +15,16 @@
         android:layout_marginBottom="16dp"
         android:layout_weight="1"
         android:background="@android:color/holo_blue_dark"
+        android:drawableBottom="@drawable/ic_account_box_white_24dp"
+        android:onClick="onPictureButtonClicked"
+        android:paddingBottom="80dp"
+        android:paddingTop="80dp"
         android:text="@string/work_with_picture"
-        android:textColor="@android:color/white"
+        android:textAllCaps="false"
 
-        android:onClick="onPictureButtonClicked"/>
+        android:textColor="@android:color/white"
+        android:textSize="25sp"
+        android:textStyle="bold|italic" />
 
     <Button
         android:id="@+id/btnConnect"
@@ -28,7 +34,13 @@
         android:layout_weight="1"
         android:background="@android:color/holo_blue_dark"
         android:text="@string/connect"
+        android:textStyle="bold|italic"
+        android:textAllCaps="false"
+        android:textSize="25sp"
         android:textColor="@android:color/white"
+        android:drawableBottom="@drawable/ic_wifi_white_24dp"
+        android:paddingTop="80dp"
+        android:paddingBottom="80dp"
 
         android:onClick="onConnectButtonClicked"/>
 

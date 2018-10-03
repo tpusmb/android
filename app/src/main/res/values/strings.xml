@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HumanAnime</string>
+    <string name="app_name">Transformer</string>
     <string name="image_view">ImageView</string>
     <string name="take_a_picture">Take a picture</string>
     <string name="import_a_picture">Import a picture</string>
