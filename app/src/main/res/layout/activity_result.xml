@@ -28,7 +28,13 @@
         android:layout_marginBottom="16dp"
         android:background="@android:color/holo_blue_dark"
         android:text="@string/save_picture"
+        android:textStyle="bold|italic"
+        android:textAllCaps="false"
+        android:textSize="22sp"
         android:textColor="@android:color/white"
+        android:drawableStart="@drawable/ic_save_white_24dp"
+        android:paddingLeft="70dp"
+        android:paddingRight="70dp"
 
         android:onClick="onSaveButtonClicked"/>
 

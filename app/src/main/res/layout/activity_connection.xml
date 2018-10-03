@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:text="@string/enter_ip_address"
+        android:textStyle="bold|italic"
         android:textSize="30sp"/>
 
     <EditText
@@ -23,7 +24,8 @@
         android:layout_marginBottom="16dp"
         android:ems="10"
         android:inputType="none"
-        android:hint="@string/ip_address" />
+        android:hint="@string/ip_address"
+        android:textStyle="italic"/>
 
     <Button
         android:id="@+id/btnConfirm"
@@ -31,9 +33,16 @@
         android:layout_height="0dp"
         android:layout_marginBottom="16dp"
         android:layout_weight="1"
+        android:theme="@style/AlertDialog.AppCompat.Light"
         android:background="@android:color/holo_blue_dark"
         android:text="@string/confirm"
+        android:textStyle="bold|italic"
+        android:textAllCaps="false"
+        android:textSize="25sp"
         android:textColor="@android:color/white"
+        android:drawableBottom="@drawable/ic_check_white_24dp"
+        android:paddingTop="170dp"
+        android:paddingBottom="170dp"
 
         android:onClick="onConfirmButtonClicked"/>
 
