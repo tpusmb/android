@@ -40,9 +40,9 @@
         android:textAllCaps="false"
         android:textSize="25sp"
         android:textColor="@android:color/white"
-        android:drawableBottom="@drawable/ic_check_white_24dp"
-        android:paddingTop="170dp"
-        android:paddingBottom="170dp"
+        android:drawableEnd="@drawable/ic_check_white_24dp"
+        android:paddingStart="90dp"
+        android:paddingEnd="90dp"
 
         android:onClick="onConfirmButtonClicked"/>
 

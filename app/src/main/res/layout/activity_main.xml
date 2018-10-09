@@ -15,12 +15,12 @@
         android:layout_marginBottom="16dp"
         android:layout_weight="1"
         android:background="@android:color/holo_blue_dark"
-        android:drawableBottom="@drawable/ic_account_box_white_24dp"
-        android:onClick="onPictureButtonClicked"
-        android:paddingBottom="80dp"
-        android:paddingTop="80dp"
         android:text="@string/work_with_picture"
         android:textAllCaps="false"
+        android:drawableStart="@drawable/ic_account_box_white_24dp"
+        android:onClick="onPictureButtonClicked"
+        android:paddingStart="90dp"
+        android:paddingEnd="90dp"
 
         android:textColor="@android:color/white"
         android:textSize="25sp"
@@ -38,9 +38,9 @@
         android:textAllCaps="false"
         android:textSize="25sp"
         android:textColor="@android:color/white"
-        android:drawableBottom="@drawable/ic_wifi_white_24dp"
-        android:paddingTop="80dp"
-        android:paddingBottom="80dp"
+        android:drawableStart="@drawable/ic_wifi_white_24dp"
+        android:paddingStart="90dp"
+        android:paddingEnd="90dp"
 
         android:onClick="onConnectButtonClicked"/>
 

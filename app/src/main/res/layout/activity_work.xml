@@ -34,7 +34,7 @@
         android:textAllCaps="false"
         android:textSize="20sp"
         android:drawableStart="@drawable/ic_local_see_white_24dp"
-        android:paddingStart="70dp"
+        android:paddingStart="60dp"
         android:paddingEnd="80dp"
 
         android:textColor="@android:color/white" />
@@ -52,7 +52,7 @@
         android:textSize="20sp"
         android:textColor="@android:color/white"
         android:drawableStart="@drawable/ic_folder_white_24dp"
-        android:paddingStart="70dp"
+        android:paddingStart="60dp"
         android:paddingEnd="80dp"
 
         android:onClick="onGalleryButtonClicked"/>
