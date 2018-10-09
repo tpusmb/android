@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_marginTop="16dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    tools:context=".WorkActivity">
+
+    <ImageView
+        android:id="@+id/imgView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_weight="25"
+        android:adjustViewBounds="true"
+        android:background="#CFE0E6"
+        android:contentDescription="@string/image_view"
+        android:src="@drawable/ic_image_white_24dp" />
+
+    <Button
+        android:id="@+id/btnCamera"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_weight="1"
+        android:background="@android:color/holo_blue_dark"
+        android:onClick="onCameraButtonClicked"
+        android:text="@string/take_a_picture"
+        android:textStyle="bold|italic"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        android:drawableStart="@drawable/ic_local_see_white_24dp"
+        android:paddingStart="70dp"
+        android:paddingEnd="80dp"
+
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/btnGallery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"
+        android:background="@android:color/holo_blue_dark"
+        android:text="@string/import_a_picture"
+        android:textStyle="bold|italic"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        android:textColor="@android:color/white"
+        android:drawableStart="@drawable/ic_folder_white_24dp"
+        android:paddingStart="70dp"
+        android:paddingEnd="80dp"
+
+        android:onClick="onGalleryButtonClicked"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btnConvertToAnime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="#3F51B5"
+            android:text="@string/convert_into_anime"
+            android:textStyle="bold|italic"
+            android:textAllCaps="false"
+            android:textSize="17sp"
+            android:textColor="@android:color/white"
+
+            android:onClick="onConvertAnimeButtonClicked"
+            tools:ignore="ButtonStyle" />
+
+        <Button
+            android:id="@+id/btnConvertToCat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="#3F51B5"
+            android:text="@string/convert_into_cat"
+            android:textStyle="bold|italic"
+            android:textAllCaps="false"
+            android:textSize="17sp"
+            android:textColor="@android:color/white"
+
+            android:onClick="onConvertCatButtonClicked"
+            tools:ignore="ButtonStyle" />
+
+    </LinearLayout>
+
+</LinearLayout>

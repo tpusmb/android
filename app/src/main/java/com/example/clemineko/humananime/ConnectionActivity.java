@@ -58,7 +58,7 @@ public class ConnectionActivity extends AppCompatActivity  {
                     }
 
                     // call the menu activity
-                    Intent intent = new Intent(ConnectionActivity.this, MenuActivity.class);
+                    Intent intent = new Intent(ConnectionActivity.this, MainActivity.class);
                     startActivity(intent);
 
                 } catch (Exception e) {
