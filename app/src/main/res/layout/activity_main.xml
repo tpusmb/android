@@ -8,6 +8,15 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
+    <ImageView
+        android:id="@+id/titleImgView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/logo"
+        android:contentDescription="@string/image_view" />
+
     <Button
         android:id="@+id/btnWorkWithPicture"
         android:layout_width="match_parent"
