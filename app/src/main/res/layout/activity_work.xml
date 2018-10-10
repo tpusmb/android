@@ -30,12 +30,12 @@
         android:background="@android:color/holo_blue_dark"
         android:onClick="onCameraButtonClicked"
         android:text="@string/take_a_picture"
-        android:textStyle="bold|italic"
         android:textAllCaps="false"
-        android:textSize="20sp"
+        android:textSize="18sp"
+        android:fontFamily="@font/megatron_italic"
         android:drawableStart="@drawable/ic_local_see_white_24dp"
-        android:paddingStart="60dp"
-        android:paddingEnd="80dp"
+        android:paddingStart="50dp"
+        android:paddingEnd="50dp"
 
         android:textColor="@android:color/white" />
 
@@ -47,13 +47,13 @@
         android:layout_marginBottom="16dp"
         android:background="@android:color/holo_blue_dark"
         android:text="@string/import_a_picture"
-        android:textStyle="bold|italic"
         android:textAllCaps="false"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textColor="@android:color/white"
+        android:fontFamily="@font/megatron_italic"
         android:drawableStart="@drawable/ic_folder_white_24dp"
-        android:paddingStart="60dp"
-        android:paddingEnd="80dp"
+        android:paddingStart="50dp"
+        android:paddingEnd="50dp"
 
         android:onClick="onGalleryButtonClicked"/>
 
@@ -71,10 +71,10 @@
             android:layout_marginBottom="16dp"
             android:background="#3F51B5"
             android:text="@string/convert_into_anime"
-            android:textStyle="bold|italic"
             android:textAllCaps="false"
-            android:textSize="17sp"
+            android:textSize="13sp"
             android:textColor="@android:color/white"
+            android:fontFamily="@font/megatron_italic"
 
             android:onClick="onConvertAnimeButtonClicked"
             tools:ignore="ButtonStyle" />
@@ -88,10 +88,10 @@
             android:layout_marginBottom="16dp"
             android:background="#3F51B5"
             android:text="@string/convert_into_cat"
-            android:textStyle="bold|italic"
             android:textAllCaps="false"
-            android:textSize="17sp"
+            android:textSize="13sp"
             android:textColor="@android:color/white"
+            android:fontFamily="@font/megatron_italic"
 
             android:onClick="onConvertCatButtonClicked"
             tools:ignore="ButtonStyle" />

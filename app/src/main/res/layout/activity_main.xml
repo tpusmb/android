@@ -5,13 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
     tools:context=".MainActivity">
 
     <ImageView
         android:id="@+id/titleImgView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:minHeight="100dp"
         android:layout_marginBottom="16dp"
         android:adjustViewBounds="true"
         android:background="@drawable/logo"
@@ -21,35 +22,41 @@
         android:id="@+id/btnWorkWithPicture"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
         android:layout_weight="1"
+        android:minHeight="200dp"
         android:background="@android:color/holo_blue_dark"
         android:text="@string/work_with_picture"
         android:textAllCaps="false"
-        android:drawableStart="@drawable/ic_account_box_white_24dp"
-        android:onClick="onPictureButtonClicked"
-        android:paddingStart="90dp"
-        android:paddingEnd="90dp"
-
-        android:textColor="@android:color/white"
         android:textSize="25sp"
-        android:textStyle="bold|italic" />
+        android:textColor="@android:color/white"
+        android:fontFamily="@font/megatron_italic"
+        android:drawableStart="@drawable/ic_account_box_white_24dp"
+        android:paddingStart="65dp"
+        android:paddingEnd="65dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+
+        android:onClick="onPictureButtonClicked"/>
 
     <Button
         android:id="@+id/btnConnect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
         android:layout_weight="1"
+        android:minHeight="200dp"
         android:background="@android:color/holo_blue_dark"
         android:text="@string/connect"
-        android:textStyle="bold|italic"
         android:textAllCaps="false"
         android:textSize="25sp"
         android:textColor="@android:color/white"
+        android:fontFamily="@font/megatron_italic"
         android:drawableStart="@drawable/ic_wifi_white_24dp"
-        android:paddingStart="90dp"
-        android:paddingEnd="90dp"
+        android:paddingStart="65dp"
+        android:paddingEnd="65dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
 
         android:onClick="onConnectButtonClicked"/>
 
