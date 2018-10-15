@@ -23,6 +23,6 @@ public class Global {
     public static Channel CHANNEL = null;
     public static Consumer CONSUMER = null;
 
-    public static Bitmap BITMAP;
+    public static Bitmap RESULT_BITMAP;
     public static Semaphore SEMAPHORE;
 }

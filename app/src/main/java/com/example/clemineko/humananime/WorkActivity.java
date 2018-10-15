@@ -35,6 +35,7 @@ public class WorkActivity extends AppCompatActivity {
     public static final int CAMERA_REQUEST = 10;
     public static final int GALLERY_REQUEST = 20;
 
+    private Bitmap bitmap;
     private Uri imageUri;
 
     Button btnCamera;
@@ -66,7 +67,7 @@ public class WorkActivity extends AppCompatActivity {
                                     throws IOException {
                                 // get the transformed image from the server
                                 String newB64Image = new String(body, "UTF-8");
-                                Global.BITMAP = base64ToBitmap(newB64Image);
+                                Global.RESULT_BITMAP = base64ToBitmap(newB64Image);
 
                                 // unlock the semaphore
                                 Global.SEMAPHORE.release();
@@ -165,7 +166,7 @@ public class WorkActivity extends AppCompatActivity {
             if(requestCode == CAMERA_REQUEST){
                 try{
                     // get a bitmap thanks to his uri
-                    Global.BITMAP = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                     // display the image
                     setBitmapToImageView();
 
@@ -182,7 +183,7 @@ public class WorkActivity extends AppCompatActivity {
                     // read the image data
                     InputStream IS = getContentResolver().openInputStream(imageUri);
                     // get a bitmap from the stream
-                    Global.BITMAP = BitmapFactory.decodeStream(IS);
+                    bitmap = BitmapFactory.decodeStream(IS);
                     // display the image
                     setBitmapToImageView();
 
@@ -202,7 +203,7 @@ public class WorkActivity extends AppCompatActivity {
      */
     protected void convertImage(final String conversionType){
         // test if there is an image selected and if the app has been connected with the server.
-        if(Global.BITMAP == null) Toast.makeText(this, "No image", Toast.LENGTH_LONG).show();
+        if(bitmap == null) Toast.makeText(this, "No image", Toast.LENGTH_LONG).show();
         else if (Global.CHANNEL == null) Toast.makeText(this, "No connection configured", Toast.LENGTH_LONG).show();
         else{
             // create a thread to communicate with the server
@@ -211,7 +212,7 @@ public class WorkActivity extends AppCompatActivity {
                 public void run() {
                     try {
                         // reduce the image size and convert it into base64. A large image is slower to send and unnecessary
-                        String base64Image = bitmapToBase64(resizeBitmap(Global.BITMAP));
+                        String base64Image = bitmapToBase64(resizeBitmap(bitmap));
                         // send the base64 image to the server
                         Global.CHANNEL.basicPublish(Global.EXCHANGE_NAME, conversionType, null, base64Image.getBytes());
 
@@ -227,10 +228,7 @@ public class WorkActivity extends AppCompatActivity {
             try {
                 Global.SEMAPHORE.acquire();
 
-                // if the process terminated correctly: change the image displayed on this activity for reuse purpose...
-                setBitmapToImageView();
-
-                // ...then call the result activity
+                // if the process terminated correctly: call the result activity
                 startResultActivity();
 
             } catch (InterruptedException e) {
@@ -248,7 +246,7 @@ public class WorkActivity extends AppCompatActivity {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
         // create and compress a copy of our image
-        Bitmap compressedBitmap = Global.BITMAP;
+        Bitmap compressedBitmap = Global.RESULT_BITMAP;
         compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
 
         // get the bitmap bytes
@@ -266,7 +264,7 @@ public class WorkActivity extends AppCompatActivity {
      */
     protected void setBitmapToImageView(){
         // display the bitmap
-        imgView.setImageBitmap(Global.BITMAP);
+        imgView.setImageBitmap(bitmap);
 
         // get the background of the ImageView
         ColorDrawable drawable = (ColorDrawable) imgView.getBackground();
@@ -321,7 +319,7 @@ public class WorkActivity extends AppCompatActivity {
         else if(bitmapSize > 250000) ratio = 0.8;
 
         // apply the ratio to both image's width and height
-        return  Bitmap.createScaledBitmap(bitmapToResize,(int)(Global.BITMAP.getWidth()*ratio), (int)(bitmapToResize.getHeight()*ratio), true);
+        return  Bitmap.createScaledBitmap(bitmapToResize,(int)(bitmapToResize.getWidth()*ratio), (int)(bitmapToResize.getHeight()*ratio), true);
     }
 
     /**
