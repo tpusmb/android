@@ -1,5 +1,7 @@
 package com.example.clemineko.humananime;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -33,8 +35,25 @@ public class ResultActivity extends AppCompatActivity {
         byte[] byteArray = getIntent().getByteArrayExtra("imageBytes");
         bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
+        // set imageView alpha to 0. An animation will set it back to 1
+        resultImageView.setAlpha(0.0f);
         // display the image
         setBitmapToImageView();
+
+        // create animation for imageView alpha and scale
+        ObjectAnimator alphaAnimation = ObjectAnimator.ofFloat(resultImageView, View.ALPHA, 0.0f, 1.0f);
+        alphaAnimation.setDuration(2000);
+        ObjectAnimator scaleXAnimator = ObjectAnimator.ofFloat(resultImageView, View.SCALE_X, 1.3f, 1.0f);
+        scaleXAnimator.setDuration(2000);
+        ObjectAnimator scaleYAnimator = ObjectAnimator.ofFloat(resultImageView, View.SCALE_Y, 1.3f, 1.0f);
+        scaleYAnimator.setDuration(2000);
+
+        // gather animations together
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(alphaAnimation, scaleXAnimator, scaleYAnimator);
+
+        // start animations
+        animatorSet.start();
     }
 
     /**
